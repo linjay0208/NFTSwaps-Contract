@@ -1,12 +1,12 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.0;
+pragma solidity ^0.6.6;
 
-import "openzeppelin-solidity/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-solidity/contracts/access/Ownable.sol";
-import "openzeppelin-solidity/contracts/utils/math/SafeMath.sol";
+import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 
-contract SwapsSocks is ERC721Enumerable, Ownable {
+contract SwapsSocks is ERC721, Ownable {
   using SafeMath for uint256;
 
   string public defaultTokenURI;
@@ -20,7 +20,7 @@ contract SwapsSocks is ERC721Enumerable, Ownable {
 
   event ClaimRequest(address owner, uint256 tokenId);
 
-  constructor(string memory name, string memory symbol, address sockContract, address[] memory whitelisted, address[] memory blacklisted) ERC721(name, symbol) {
+  constructor(string memory name, string memory symbol, address sockContract, address[] memory whitelisted, address[] memory blacklisted) ERC721(name, symbol) public {
     sockSwapContract = IERC20(sockContract);
     for(uint256 x = 0; x < whitelisted.length; x++){
       batchOne[whitelisted[x]] = true;
@@ -30,16 +30,16 @@ contract SwapsSocks is ERC721Enumerable, Ownable {
       blacklist[blacklisted[x]] = true;
     }
   }
-
+/*
   function setDefaultTokenURI(string memory newDefaultTokenUri) external onlyOwner {
       defaultTokenURI = newDefaultTokenUri;
-  }
+  }*/
 
   function adminMintRare(uint256 _amount) external onlyOwner {
     require(adminRareMintCount + _amount <= 10, "Max Rare Socks Minted!");
     for(uint256 x = 0; x < _amount; x++){
-      isRare[ERC721Enumerable.totalSupply()] = true;
-      _mint(msg.sender, ERC721Enumerable.totalSupply());
+      isRare[ERC721.totalSupply()] = true;
+      _mint(msg.sender, ERC721.totalSupply());
     }
     adminRareMintCount += _amount;
   }
@@ -47,7 +47,7 @@ contract SwapsSocks is ERC721Enumerable, Ownable {
   function adminMintCommon(uint256 _amount) external onlyOwner {
     require(adminCommonMintCount + _amount <= 390, "Max Common Socks Minted!");
     for(uint256 x = 0; x < _amount; x++){
-      _mint(msg.sender, ERC721Enumerable.totalSupply());
+      _mint(msg.sender, ERC721.totalSupply());
     }
     adminCommonMintCount += _amount;
   }
@@ -57,7 +57,7 @@ contract SwapsSocks is ERC721Enumerable, Ownable {
       require(batchOne[msg.sender] || block.timestamp > startTimestamp + (86400 * 30), "ERC721: You cannot mint yet!");
       require(sockSwapContract.transferFrom(msg.sender, address(0), _amount * (1000 ether)));
       for(uint256 x = 0; x < _amount; x++){
-        _mint(msg.sender, ERC721Enumerable.totalSupply());
+        _mint(msg.sender, ERC721.totalSupply());
       }
 
   }
