@@ -8,7 +8,7 @@ import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
 
 contract SwapsRouter is Ownable, VRFConsumerBase {
-  using SafeMath for uint256;
+
 
   mapping(address => address) public NftPairs;
   mapping(address => address) public TokenPairs;
@@ -100,7 +100,8 @@ contract SwapsRouter is Ownable, VRFConsumerBase {
 
   function buyTokenPancake(address token) public payable {
     require(msg.value > 0, "Cannot Trade 0 ETH!");
-    owner().transfer(msg.value.mul(3).div(400));
+    address payable owner = payable(owner());
+    owner.transfer(msg.value.mul(3).div(400));
     address[] memory path = new address[](2);
     path[0] = weth;
     path[1] = token;
