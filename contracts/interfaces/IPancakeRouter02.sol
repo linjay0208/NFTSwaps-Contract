@@ -1,4 +1,4 @@
-pragma solidity >=0.6.2;
+pragma solidity >=0.5.16;
 
 import './IPancakeRouter01.sol';
 

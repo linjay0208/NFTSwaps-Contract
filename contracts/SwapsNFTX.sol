@@ -24,5 +24,4 @@ contract SwapsNFTX is ERC20, Ownable {
     return true;
   }
 
-
 }

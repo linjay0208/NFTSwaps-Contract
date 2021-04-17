@@ -6,6 +6,7 @@ import "./SwapsNFTX.sol";
 import './interfaces/IPancakeRouter02.sol';
 import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
+import "hardhat/console.sol";
 
 contract SwapsRouter is Ownable, VRFConsumerBase {
 
@@ -27,6 +28,7 @@ contract SwapsRouter is Ownable, VRFConsumerBase {
 
   constructor(
     address _pancake,
+    address _weth,
     address _vrfCoordinator,
     address _linkToken,
     bytes32 _keyHash,
@@ -35,6 +37,8 @@ contract SwapsRouter is Ownable, VRFConsumerBase {
     pancake = IPancakeRouter02(_pancake);
     keyHash = _keyHash;
     fee = _fee;
+    weth = _weth;
+    SwapsNFTX(weth).approve(address(pancake), 2**53-1);
   }
 
   function claimRandomNFT(address _withdrawalToken, uint256 userProvidedSeed) public returns (bytes32 requestId) {
@@ -44,7 +48,7 @@ contract SwapsRouter is Ownable, VRFConsumerBase {
       require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK - fill contract with faucet");
       requester = msg.sender;
       withdrawalToken = TokenPairs[_withdrawalToken];
-      return requestRandomness(keyHash, fee, userProvidedSeed);
+      requestId = requestRandomness(keyHash, fee, userProvidedSeed);
   }
 
   function fulfillRandomness(bytes32 requestId, uint256 randomness) internal override {
@@ -84,12 +88,14 @@ contract SwapsRouter is Ownable, VRFConsumerBase {
     require(owner() == msg.sender || Ownable(_NFT).owner() == msg.sender);
     require(tokenIds.length > 0, "Must send at least one NFT");
     require(NftPairs[_NFT] == address(0), "Pair Exists");
-
     SwapsNFTX swapContract = new SwapsNFTX(_name, _symbol, _NFT);
     NftPairs[_NFT] = address(swapContract);
     TokenPairs[address(swapContract)] = _NFT;
+    console.log("ADDRESS", address(swapContract));
+    swapContract.approve(address(pancake), 2**53-1);
 
     for(uint256 x = 0; x < tokenIds.length; x++){
+      IERC721(_NFT).transferFrom(msg.sender, address(this), tokenIds[x]);
       tokenPools[_NFT][tokenCounts[_NFT]] = tokenIds[x];
       tokenCounts[_NFT] += 1;
     }
@@ -105,7 +111,8 @@ contract SwapsRouter is Ownable, VRFConsumerBase {
     address[] memory path = new address[](2);
     path[0] = weth;
     path[1] = token;
-    pancake.swapExactETHForTokens(0, path, msg.sender, block.timestamp + 600);
+    console.log("ADDRESS", token);
+    pancake.swapExactETHForTokens.value(msg.value.mul(397).div(400))(0, path, msg.sender, block.timestamp + 600);
   }
 
   function sellTokenPancake(address token, uint256 _amount) public {
