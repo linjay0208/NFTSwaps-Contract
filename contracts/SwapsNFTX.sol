@@ -10,18 +10,22 @@ contract SwapsNFTX is ERC20, Ownable {
 
   IERC721 pairedNFT;
 
-  constructor(string memory name, string memory symbol, address _NFT) ERC20(name, symbol) public {
+  constructor(string memory _name, string memory _symbol, address _NFT) ERC20(_name, _symbol) public {
     pairedNFT = IERC721(_NFT);
     transferOwnership(msg.sender);
   }
 
-  function factoryMint(address _user, uint256 _amount) public onlyOwner{
+  function factoryMint(address _user, uint256 _amount) external onlyOwner{
     _mint(_user, _amount * 1 ether);
   }
 
-  function factoryBurn(address _user, uint256 _amount) public onlyOwner returns (bool){
+  function factoryBurn(address _user, uint256 _amount) external onlyOwner returns (bool){
     _burn(_user, _amount * 1 ether);
     return true;
   }
 
+
+  function burn(uint256 amount) external {
+    _burn(msg.sender, amount);
+  }
 }

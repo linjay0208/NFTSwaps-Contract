@@ -9,7 +9,6 @@ import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 contract SwapsSocks is ERC721, Ownable {
   using SafeMath for uint256;
 
-  string public defaultTokenURI;
   IERC20 sockSwapContract;
   mapping(address => bool) public blacklist;
   mapping(address => bool) public batchOne;
@@ -22,6 +21,7 @@ contract SwapsSocks is ERC721, Ownable {
 
   constructor(string memory name, string memory symbol, address sockContract, address[] memory whitelisted, address[] memory blacklisted) ERC721(name, symbol) public {
     sockSwapContract = IERC20(sockContract);
+    startTimestamp = block.timestamp;
     for(uint256 x = 0; x < whitelisted.length; x++){
       batchOne[whitelisted[x]] = true;
     }
@@ -30,10 +30,6 @@ contract SwapsSocks is ERC721, Ownable {
       blacklist[blacklisted[x]] = true;
     }
   }
-/*
-  function setDefaultTokenURI(string memory newDefaultTokenUri) external onlyOwner {
-      defaultTokenURI = newDefaultTokenUri;
-  }*/
 
   function adminMintRare(uint256 _amount) external onlyOwner {
     require(adminRareMintCount + _amount <= 10, "Max Rare Socks Minted!");
@@ -55,11 +51,10 @@ contract SwapsSocks is ERC721, Ownable {
   function claimSocks(uint256 _amount) external {
       require(!blacklist[msg.sender], "ERC721: Sender Blacklisted");
       require(batchOne[msg.sender] || block.timestamp > startTimestamp + (86400 * 30), "ERC721: You cannot mint yet!");
-      require(sockSwapContract.transferFrom(msg.sender, address(0), _amount * (1000 ether)));
       for(uint256 x = 0; x < _amount; x++){
         _mint(msg.sender, ERC721.totalSupply());
       }
-
+      sockSwapContract.transferFrom(msg.sender, address(0), _amount * (1000 ether));
   }
 
   function claimPhysical(uint256 _tokenId) external {
