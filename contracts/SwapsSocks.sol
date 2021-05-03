@@ -56,17 +56,18 @@ contract SwapsSocks is ERC721, Ownable {
   }
 
   function claimSocks(uint256 _amount) external payable {
-      require(msg.value >= 0.25 ether);
       require(!blacklist[msg.sender], "ERC721: Sender Blacklisted");
       require(batchOne[msg.sender] && whitelist[msg.sender] > 0 || whitelist[msg.sender] > 0 && block.timestamp > startTimestamp + (86400 * 30), "ERC721: You cannot mint!");
       for(uint256 x = 0; x < _amount; x++){
         _mint(msg.sender, ERC721.totalSupply());
+        whitelist[msg.sender]--;
       }
       sockSwapContract.transferFrom(msg.sender, address(0), _amount * (1000 ether));
       address(uint160(owner())).transfer(msg.value);
   }
 
   function claimPhysical(uint256 _tokenId) external {
+      require(msg.value >= 0.25 ether);
       require(!blacklist[msg.sender], "ERC721: Sender Blacklisted");
       transferFrom(msg.sender, address(this), _tokenId);
 
