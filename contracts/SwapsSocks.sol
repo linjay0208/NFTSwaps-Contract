@@ -12,7 +12,8 @@ contract SwapsSocks is ERC721, Ownable {
   IERC20 sockSwapContract;
   mapping(address => bool) public blacklist;
   mapping(address => bool) public batchOne;
-  mapping(uint256 => bool) public isRare;
+  mapping(address => uint256) public whitelist;
+  mapping(uint256 => uint256) public isRare;
   uint256 public adminCommonMintCount;
   uint256 public adminRareMintCount;
   uint256 startTimestamp;
@@ -31,10 +32,16 @@ contract SwapsSocks is ERC721, Ownable {
     }
   }
 
+  function addToWhitelist(address[] users, uint256[] amount) external onlyOwner{
+    for(uint256 x = 0; x < amount; x++){
+      whitelist[user[x]] += amount[x];
+    }
+  }
+
   function adminMintRare(uint256 _amount) external onlyOwner {
     require(adminRareMintCount + _amount <= 10, "Max Rare Socks Minted!");
     for(uint256 x = 0; x < _amount; x++){
-      isRare[ERC721.totalSupply()] = true;
+      isRare[ERC721.totalSupply()] = adminRareMintCount + x + 1;
       _mint(msg.sender, ERC721.totalSupply());
     }
     adminRareMintCount += _amount;
@@ -48,13 +55,15 @@ contract SwapsSocks is ERC721, Ownable {
     adminCommonMintCount += _amount;
   }
 
-  function claimSocks(uint256 _amount) external {
+  function claimSocks(uint256 _amount) external payable {
+      require(msg.value >= 0.25 ether);
       require(!blacklist[msg.sender], "ERC721: Sender Blacklisted");
-      require(batchOne[msg.sender] || block.timestamp > startTimestamp + (86400 * 30), "ERC721: You cannot mint yet!");
+      require(batchOne[msg.sender] && whitelist[msg.sender] > 0 || whitelist[msg.sender] > 0 && block.timestamp > startTimestamp + (86400 * 30), "ERC721: You cannot mint!");
       for(uint256 x = 0; x < _amount; x++){
         _mint(msg.sender, ERC721.totalSupply());
       }
       sockSwapContract.transferFrom(msg.sender, address(0), _amount * (1000 ether));
+      address(uint160(owner())).transfer(msg.value);
   }
 
   function claimPhysical(uint256 _tokenId) external {
@@ -82,7 +91,5 @@ contract SwapsSocks is ERC721, Ownable {
         require(!blacklist[to], "ERC721: Receiver Blacklisted");
         _safeTransfer(from, to, tokenId, _data);
     }
-
-
 
 }

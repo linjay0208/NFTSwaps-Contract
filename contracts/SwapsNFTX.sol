@@ -24,7 +24,6 @@ contract SwapsNFTX is ERC20, Ownable {
     return true;
   }
 
-
   function burn(uint256 amount) external {
     _burn(msg.sender, amount);
   }
