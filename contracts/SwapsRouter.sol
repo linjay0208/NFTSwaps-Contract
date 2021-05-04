@@ -52,6 +52,10 @@ contract SwapsRouter is Ownable, VRFConsumerBase {
     pancakeV1 = IPancakeRouter02(_newAddress);
   }
 
+  function setLink(uint256 _amount) external onlyOwner {
+    fee = _amount;
+  }
+
   function claimRandomNFT(address _withdrawalToken, uint256 userProvidedSeed) external returns (bytes32 requestId) {
       require(TokenPairs[_withdrawalToken] != address(0), "Invalid Token");
       require(keyHash != bytes32(0), "Must have valid key hash");
