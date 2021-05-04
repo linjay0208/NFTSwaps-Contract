@@ -35,7 +35,8 @@ contract SwapsRouter is Ownable, VRFConsumerBase {
 
   constructor(
     address _vrfCoordinator, //	0x747973a5A2a4Ae1D3a8fDF5479f1514F65Db9C31
-    address _linkToken //0x404460C6A5EdE2D891e8297795264fDe62ADBB75
+    address _linkToken, //0x404460C6A5EdE2D891e8297795264fDe62ADBB75
+    address _swapAddress
     )
     VRFConsumerBase(_vrfCoordinator, _linkToken) public {
       pancake = IPancakeRouter02(0x10ED43C718714eb63d5aA57B78B54704E256024E);//0x10ED43C718714eb63d5aA57B78B54704E256024E //0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F
@@ -43,6 +44,7 @@ contract SwapsRouter is Ownable, VRFConsumerBase {
       keyHash = 0xc251acd21ec4fb7f31bb8868288bfdbaeb4fbfec2df3735ddbd4f7dc8d60103c;
       fee = 0.2 ether;
       weth = 0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c;
+      swapAddress = _swapAddress;
       ISwapsNFTX(weth).approve(address(pancake), (2**256)-1);
   }
 

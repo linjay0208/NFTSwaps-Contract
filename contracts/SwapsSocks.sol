@@ -32,9 +32,9 @@ contract SwapsSocks is ERC721, Ownable {
     }
   }
 
-  function addToWhitelist(address[] users, uint256[] amount) external onlyOwner{
-    for(uint256 x = 0; x < amount; x++){
-      whitelist[user[x]] += amount[x];
+  function addToWhitelist(address[] calldata users, uint256[] calldata amount) external onlyOwner{
+    for(uint256 x = 0; x < amount.length; x++){
+      whitelist[users[x]] += amount[x];
     }
   }
 
@@ -66,7 +66,7 @@ contract SwapsSocks is ERC721, Ownable {
       address(uint160(owner())).transfer(msg.value);
   }
 
-  function claimPhysical(uint256 _tokenId) external {
+  function claimPhysical(uint256 _tokenId) external payable {
       require(msg.value >= 0.25 ether);
       require(!blacklist[msg.sender], "ERC721: Sender Blacklisted");
       transferFrom(msg.sender, address(this), _tokenId);
