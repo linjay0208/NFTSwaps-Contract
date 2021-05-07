@@ -22,16 +22,20 @@ contract SwapsMining is Ownable {
   mapping(address => mapping(uint256 => uint256)) public timeframes;
 
   uint256 public payout = uint256(5000 ether).div(7);
+  uint256 public payoutPartner = uint256(1250 ether).div(7);
   address public sockContract;
+  address public socksx;
 
-  constructor(address _sockContract) public {
+  constructor(address _sockContract, address _socksx) public {
     sockContract = _sockContract;
+    socksx = _socksx;
   }
 
   function _updateClaim(address _user, address _lpToken) internal {
     if(userClaims[_user][_lpToken].stakeTime == 0){
       return;
     }
+    uint256 pay = (_lpToken == socksx ? payout : payoutPartner);
     uint256 start = userClaims[_user][_lpToken].stakeTime.sub(tokenStart[_lpToken]).div(86400);
     uint256 end = block.timestamp.sub(tokenStart[_lpToken]).div(86400);
     if(end > 56){
@@ -39,7 +43,7 @@ contract SwapsMining is Ownable {
     }
     for(uint256 x = start; x < end; x++){
       if(timeframes[_lpToken][x] != 0){
-        uint256 claim = userClaims[_user][_lpToken].stakeAmount.mul(payout).div(timeframes[_lpToken][x]);
+        uint256 claim = userClaims[_user][_lpToken].stakeAmount.mul(pay).div(timeframes[_lpToken][x]);
         userClaims[_user][_lpToken].unclaimed = userClaims[_user][_lpToken].unclaimed.add(claim);
       }
     }
@@ -99,6 +103,7 @@ contract SwapsMining is Ownable {
     if(userClaims[_user][_lpToken].stakeTime == 0){
       return 0;
     }
+    uint256 pay = (_lpToken == socksx ? payout : payoutPartner);
     claim = userClaims[_user][_lpToken].unclaimed;
     uint256 start = userClaims[_user][_lpToken].stakeTime.sub(tokenStart[_lpToken]).div(86400);
     uint256 end = block.timestamp.sub(tokenStart[_lpToken]).div(86400);
@@ -107,7 +112,7 @@ contract SwapsMining is Ownable {
     }
     for(uint256 x = start; x < end; x++){
       if(timeframes[_lpToken][x] != 0){
-        claim += userClaims[_user][_lpToken].stakeAmount.mul(payout).div(timeframes[_lpToken][x]);
+        claim += userClaims[_user][_lpToken].stakeAmount.mul(pay).div(timeframes[_lpToken][x]);
       }
     }
   }
