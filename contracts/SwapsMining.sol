@@ -38,8 +38,11 @@ contract SwapsMining is Ownable {
     uint256 pay = (_lpToken == socksx ? payout : payoutPartner);
     uint256 start = userClaims[_user][_lpToken].stakeTime.sub(tokenStart[_lpToken]).div(86400);
     uint256 end = block.timestamp.sub(tokenStart[_lpToken]).div(86400);
-    if(end > 56){
+    if(_lpToken == socksx && end > 56){
       end = 56;
+    }
+    else if(_lpToken != socksx && end > 28){
+      end = 28;
     }
     for(uint256 x = start; x < end; x++){
       if(timeframes[_lpToken][x] != 0){
@@ -81,7 +84,7 @@ contract SwapsMining is Ownable {
   }
 
   function depositLPToken(address _lpToken, uint256 _amount) public {
-    require(block.timestamp < tokenStart[_lpToken].add(86400 * 56), "Staking Finished");
+    require((_lpToken == socksx && block.timestamp < tokenStart[_lpToken].add(86400 * 56)) or (_lpToken != socksx && block.timestamp < tokenStart[_lpToken].add(86400 * 28)) , "Staking Finished");
     require(tokenEnabled[_lpToken] != address(0), "Token Not Enabled");
     _updateClaim(msg.sender, _lpToken);
     userClaims[msg.sender][_lpToken].stakeAmount = userClaims[msg.sender][_lpToken].stakeAmount.add(_amount);
@@ -107,8 +110,11 @@ contract SwapsMining is Ownable {
     claim = userClaims[_user][_lpToken].unclaimed;
     uint256 start = userClaims[_user][_lpToken].stakeTime.sub(tokenStart[_lpToken]).div(86400);
     uint256 end = block.timestamp.sub(tokenStart[_lpToken]).div(86400);
-    if(end > 56){
+    if(_lpToken == socksx && end > 56){
       end = 56;
+    }
+    else if(_lpToken != socksx && end > 28){
+      end = 28;
     }
     for(uint256 x = start; x < end; x++){
       if(timeframes[_lpToken][x] != 0){
